@@ -127,13 +127,20 @@ resource "azurerm_windows_virtual_machine" "vm" {
     version   = "latest"
   }
 
-  custom_data = filebase64("./files/installWinRar.ps1")
+  custom_data = filebase64("./files/postInstall.ps1")
 
   additional_unattend_content {
     setting = "FirstLogonCommands"
     content = file("./files/FirstLogonCommands.xml")
   }
+
+  provisioner "local-exec" {
+    command = "echo ${self.private_ip} >> private_ips.txt"
+  }
 }
 
+output "public_ip_address" {
+  value = azurerm_public_ip.pip.*.ip_address
+}
 
 
