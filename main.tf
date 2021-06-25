@@ -149,18 +149,19 @@ resource "azurerm_windows_virtual_machine" "vm" {
   }
 }
 
-data "azurerm_public_ip" "datapip" {
-  name                = azurerm_public_ip.pip.name
+data "azurerm_public_ip" "pip" {
+  count               = var.instance_count
+  name                = azurerm_public_ip.pip[count.index].name
   resource_group_name = azurerm_resource_group.rg.name
-  depends_on          = [azurerm_virtual_machine.vm]
+  depends_on          = [azurerm_windows_virtual_machine.vm]
 }
 
 # Using output to output the IPs of the machines.
 # You can then use terraform output > file.txt to get the outputs written to the file.
 # There's an extra step which imports the IP as the data resource in order to get the output working
-# cause otherwise it is empty - this is suggested by HashiCorp on their docs.
+# cause otherwise it is empty - this is suggested by HashiCorp in their docs.
 output "public_ip_address" {
-  value = data.azurerm_public_ip.pip[count.index].ip_address
+  value = data.azurerm_public_ip.pip.*.ip_address
 }
 
 
