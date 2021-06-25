@@ -2,12 +2,12 @@
    override the default values and set your own ones - either do it directly in the file, or execute plan-apply-destroy
    using the following syntax:
 
-   terraform apply -var <var_name1>=<value> -var <var_name2>=<value>
+   terraform apply -var var_name1=value -var var_name2=value
 
    There are two variables that contain sensitive data - admin_username and admin_password. They are defined in 
    secret.tfvars file. Just change the placeholders to the values you need and then run plan-apply-destroy using the following syntax:
 
-   terraform apply -var-file="<your_file>" (with the double quotes)
+   terraform apply -var-file="your_file" (with the double quotes)
 
    Do not store .tfvars file in the version control, always include it in the .gitignore or use alternative methods to manage the secrets.
 
