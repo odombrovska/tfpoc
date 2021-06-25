@@ -1,5 +1,5 @@
-# Using locals to definte the base name of the VM that will then be incremented using count.index
-# Adding common_tags that have environment name defined (can be set to anything)
+# Using locals to definte the base name of the VM that will then be incremented using count.index.
+# Adding common_tags that have environment name defined (can be set to anything).
 locals {
   vm_name     = "${var.prefix}-vm"
   common_tags = {
@@ -22,14 +22,14 @@ provider "azurerm" {
   features {}
 }
 
-# Creating resource group
+# Creating resource group.
 resource "azurerm_resource_group" "rg" {
   name     = var.resource_group_name
   location = var.location
   tags     = local.common_tags
 }
 
-# Creating virtual network for the VMs
+# Creating virtual network for the VMs.
 resource "azurerm_virtual_network" "vnet" {
   name                = "${var.prefix}-vnet"
   address_space       = ["10.0.0.0/16"]
@@ -38,7 +38,7 @@ resource "azurerm_virtual_network" "vnet" {
   tags                = local.common_tags
 }
 
-# Creating subnet inside the vnet
+# Creating subnet inside the virtual network.
 resource "azurerm_subnet" "subnet" {
   name                 = "${var.prefix}-subnet"
   resource_group_name  = azurerm_resource_group.rg.name
@@ -46,7 +46,7 @@ resource "azurerm_subnet" "subnet" {
   address_prefixes     = ["10.0.2.0/24"]
 }
 
-# Creating public IPs for the VMs
+# Creating public IPs for the VMs.
 resource "azurerm_public_ip" "pip" {
   count               = var.instance_count
   name                = "${local.vm_name}-${count.index}-pip"
@@ -56,7 +56,7 @@ resource "azurerm_public_ip" "pip" {
   tags                = local.common_tags
 }
 
-# Creating network interface cards for the VMs
+# Creating network interface cards for the VMs.
 resource "azurerm_network_interface" "nic" {
   count               = var.instance_count
   name                = "${local.vm_name}-${count.index}-nic"
@@ -72,7 +72,7 @@ resource "azurerm_network_interface" "nic" {
   }
 }
 
-# Creating network security group with a few basic rules - HTTPS, WinRm and RDP
+# Creating network security group with a few basic rules - HTTPS, WinRm and RDP.
 resource "azurerm_network_security_group" "nsg" {
   name                = "${azurerm_virtual_network.vnet.name}-nsg"
   location            = azurerm_resource_group.rg.location
@@ -113,7 +113,7 @@ resource "azurerm_network_security_group" "nsg" {
   }
 }
 
-# Creating the VMs
+# Creating the VMs.
 resource "azurerm_windows_virtual_machine" "vm" {
   count                 = var.instance_count
   name                  = "${local.vm_name}-${count.index}"
@@ -140,7 +140,7 @@ resource "azurerm_windows_virtual_machine" "vm" {
 
   # Using custom_data attribute to pass our post install script 
   # as a base64encoded string that will be then converted back to PS1 
-  # and executed using FirstLogonCommands.xml
+  # and executed using FirstLogonCommands.xml.
   custom_data = filebase64("./files/postInstall.ps1")
 
   additional_unattend_content {
@@ -149,10 +149,16 @@ resource "azurerm_windows_virtual_machine" "vm" {
   }
 }
 
-# Using output to output the IPs of the machines
-# You can then use terraform output > file.txt to get the outputs written to the file
+data "azurerm_public_ip" "datapip" {
+  name                = azurerm_public_ip.pip.name
+  resource_group_name = azurerm_resource_group.rg.name
+  depends_on          = [azurerm_virtual_machine.vm]
+}
+
+# Using output to output the IPs of the machines.
+# You can then use terraform output > file.txt to get the outputs written to the file.
 output "public_ip_address" {
-  value = azurerm_public_ip.pip.*.ip_address
+  value = data.azurerm_public_ip.pip[count.index].ip_address
 }
 
 
