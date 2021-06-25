@@ -157,8 +157,8 @@ data "azurerm_public_ip" "datapip" {
 
 # Using output to output the IPs of the machines.
 # You can then use terraform output > file.txt to get the outputs written to the file.
-# There's an extra step which impors the IP as the data resource in order to get the output working
-# - this is suggested by HashiCorp on their docs.
+# There's an extra step which imports the IP as the data resource in order to get the output working
+# cause otherwise it is empty - this is suggested by HashiCorp on their docs.
 output "public_ip_address" {
   value = data.azurerm_public_ip.pip[count.index].ip_address
 }
